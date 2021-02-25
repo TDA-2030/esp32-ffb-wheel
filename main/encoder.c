@@ -19,8 +19,8 @@
 #define PCNT_THRESH1_VAL    5
 #define PCNT_THRESH0_VAL   -5
  
-#define PCNT_INPUT_IO_A     4  // Pulse Input GPIO
-#define PCNT_INPUT_IO_B     2  // Pulse Input GPIO
+#define PCNT_INPUT_IO_A     14  // Pulse Input GPIO
+#define PCNT_INPUT_IO_B     12  // Pulse Input GPIO
  
 #define INVALID_HANDLE      0
 #define ENCODER_TAKSK_SIZE  (1024 * 2)

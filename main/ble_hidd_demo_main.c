@@ -158,12 +158,54 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         break;
     }
 }
-void encoder_task_start(void);
+
 #include "driver/pcnt.h"
+#include "iot_button.h"
+
+void encoder_task_start(void);
+
+static void button_single_click_cb(void *arg)
+{
+    ESP_LOGI(__FUNCTION__, "BUTTON_SINGLE_CLICK");
+    // esp_hidd_send_keyboard_value(hid_conn_id, LEFT_GUI_KEY_MASK, NULL, 0);
+    // esp_hidd_send_keyboard_value(hid_conn_id, 0, NULL, 0);
+}
+
+static void button_double_click_cb(void *arg)
+{
+    ESP_LOGI(__FUNCTION__, "BUTTON_DOUBLE_CLICK");
+}
+
+static void button_release_long_press(void *arg)
+{
+    esp_hidd_send_keyboard_value(hid_conn_id, 0, NULL, 0);
+    iot_button_register_cb(arg, BUTTON_SINGLE_CLICK, button_single_click_cb);
+}
+
+static void button_long_press_start_cb(void *arg)
+{
+    ESP_LOGI(__FUNCTION__, "BUTTON_LONG_PRESS_START");
+    uint8_t keys=Keyboard_w;
+    esp_hidd_send_keyboard_value(hid_conn_id, 0, &keys, 1);
+    iot_button_register_cb(arg, BUTTON_SINGLE_CLICK, button_release_long_press);
+}
+
 void hid_demo_task(void *pvParameters)
 {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     encoder_task_start();
+    button_config_t cfg = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = 0,
+            .active_level = 0,
+        },
+    };
+    button_handle_t btn = iot_button_create(&cfg);
+    iot_button_register_cb(btn, BUTTON_SINGLE_CLICK, button_single_click_cb);
+    iot_button_register_cb(btn, BUTTON_DOUBLE_CLICK, button_double_click_cb);
+    iot_button_register_cb(btn, BUTTON_LONG_PRESS_START, button_long_press_start_cb);
+
     int32_t cc=0, old_cc=0;
     while(1) {
         vTaskDelay(15 / portTICK_PERIOD_MS);
